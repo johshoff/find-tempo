@@ -7,9 +7,43 @@
 		<!--link rel='stylesheet' type='text/css' href='style.css'></link-->
 		<!--script type='text/javascript' src='jquery-1.7.1.min.js'></script-->
 		<style type='text/css'>
+		body {
+			font-family: gill sans, helvetica, arial, sans-serif;
+		}
+		table {
+			border-collapse: collapse;
+		}
+		.measurements {
+			border-spacing: 0px;
+		}
+		.measurements tr :nth-child(2) {
+			text-align: right;
+			min-width: 5em;
+		}
+		.submission input {
+			width: 300px;
+		}
+		td, th {
+			padding-right: 1em;
+		}
+		h3 {
+			margin-top: 3em;
+		}
+		.latest-songs {
+			background: #eee;
+		}
+		.latest-songs tr:nth-child(odd) {
+			background: #ddd;
+		}
+		.latest-songs a {
+			color: #338;
+			text-decoration: none;
+		}
 		</style>
 		<script type='text/javascript'>
 			var samples = [];
+			var symbol_off_timeouts = 0;
+
 			onkeydown = function()
 			{
 				samples.push(new Date());
@@ -29,6 +63,17 @@
 					}
 				}
 
+				document.getElementById('beat-symbol').setAttribute('fill', '#a81');
+				symbol_off_timeouts += 1;
+				setTimeout(function() {
+					symbol_off_timeouts -= 1;
+					if (symbol_off_timeouts == 0)
+						document.getElementById('beat-symbol').setAttribute('fill', 'none');
+				}, 100);
+
+				if (samples.length < 2)
+					return;
+
 				var avg_delta_ms = (sum_delta / count_delta);
 				document.getElementById('bpm-avg-delta').innerText = (60000 / avg_delta_ms).toFixed(1);
 
@@ -38,6 +83,18 @@
 				all_deltas.sort();
 				document.getElementById('bpm-median').innerText = (60000 / all_deltas[Math.floor(all_deltas.length / 2)]).toFixed(1);
 			}
+			save = function(button)
+			{
+				button.disabled = true;
+				setTimeout(function() { button.disabled = false; }, 1000);
+			}
+			restart = function()
+			{
+				samples = [];
+				document.getElementById('bpm-avg-delta').innerText = '?';
+				document.getElementById('bpm-avg-bpm')  .innerText = '?';
+				document.getElementById('bpm-median')   .innerText = '?';
+			}
 		</script>
 		<script type="text/javascript">
   	  	  var _gaq = _gaq || [];
@@ -46,25 +103,48 @@
 		</script>
 	</head>
 	<body>
-		BPM (avg delta): <span id="bpm-avg-delta"></span><br>
-		BPM (avg bpm): <span id="bpm-avg-bpm"></span><br>
-		BPM (median): <span id="bpm-median"></span>
+		<table class='measurements'>
+			<tr><th>Method         <th>BPM
+			<tr><td>Avgerage delta <td><span id="bpm-avg-delta">?</span>
+			<tr><td>Avgerage bpm   <td><span id="bpm-avg-bpm">?</span>
+			<tr><td>Median bpm     <td><span id="bpm-median">?</span>
+		</ul>
+		</table>
+		<input type="button" value="restart" onclick="restart(this)">
+		<p>
+		<svg height="30" width="30">
+  	  	  <circle id='beat-symbol' cx="50%" cy="50%" r="45%" stroke-width="0" fill=none />
+		</svg>
+
+		<p>
+
+		<table class="submission">
+			<tr><td><label for='spotify-uri'> Spotify URI:          </label> <td><input id='spotify-uri'></input>
+			<tr><td><label for='notes'>       Notes:                </label> <td><input id='notes'></input>
+			<tr><td><label for='your-name'>   Your name (optional): </label> <td><input id='your-name'></input>
+			</table>
+		<input type="button" value="save bpm" onclick="save(this)">
+
+		<h3>Most recently BMPed</h3>
+		<table class='latest-songs'>
+			<tr><th>Artist<th>Title<th>Avg Delta<th>Avg BMP<th>Median<th>Notes
+			<tr><td>The Stolen Sweets<td><a href="http://open.spotify.com/track/5QLGvlnHJJDl03tYMtZzUZ">Minnie The Moocher's Wedding Day       </a><td> 105<td> 105<td> 105<td>
+			<tr><td>The Stolen Sweets<td><a href="http://open.spotify.com/track/7usfsaX15xU4emmE9A78di">Shuffle Off To Buffalo                 </a><td> 120<td> 120<td> 120<td>Sometimes half
+			<tr><td>The Stolen Sweets<td><a href="http://open.spotify.com/track/5oJtUh3UyGn8NC7DW6TaU7">St. James Infirmary                    </a><td> 124<td> 124<td> 124<td>
+			<tr><td>The Stolen Sweets<td><a href="http://open.spotify.com/track/388tN01Ck3Y6PzMm0rNHJX">The Sentimental Gentleman From Georgia </a><td> 127<td> 127<td> 127<td>
+			<tr><td>The Stolen Sweets<td><a href="http://open.spotify.com/track/5VTzP8WqOSVNRl6FVW9R9G">When I Take My Sugar To Tea            </a><td> 133<td> 133<td> 133<td>Sometimes double
+			<tr><td>The Stolen Sweets<td><a href="http://open.spotify.com/track/6lZAXP3LMtit2ZDYdHxXv4">Between The Devil And The Deep Blue Sea</a><td> 124<td> 124<td> 124<td>
+		</table>
 
 		<script type="text/javascript">
-  	  	  (function() {
-    		var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    		ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  	  	  })();
+		if (document.location.hostname !== "0.0.0.0" && document.location.hostname !== "127.0.0.1")
+		{
+			(function() {
+			 	 var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			 	 ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			 	 var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+			 })();
+		}
 		</script>
-		<!--
-		spotify:user:johshoff:playlist:0my1D41svUY00dJjzYYmEt
-		1. 105
-		2. 120-121 (eller dobbelt)
-		3. 124
-		4. 127
-		5. 133 (eller halve)
-		6. 124
-		-->
 	</body>
 </html>
