@@ -1,0 +1,17 @@
+{
+  "name": "find-tempo",
+  "version": "0.0.0",
+  "description": "Find tempo for a song and store it in a database",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Johannes Hoff",
+  "engines": {
+    "node": "0.10.x"
+  },
+  "dependencies": {
+    "rethinkdb": "1.11.x",
+    "request"  : "2.33.x"
+  }
+}
