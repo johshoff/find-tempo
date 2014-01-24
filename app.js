@@ -84,7 +84,11 @@ var server = http.createServer(function (request, response) {
 
 var db_connection = null;
 
-r.connect({ host: 'localhost', port: 28015, db: 'bpm' }, function(err, connection) {
+r.connect({ host:    process.env.RETHINKDB_HOST || 'localhost',
+            port:    process.env.RETHINKDB_PORT || 28015,
+            authKey: process.env.RETHINKDB_AUTH,
+            db: 'bpm'
+          }, function(err, connection) {
 	if (err) throw err;
 
 	db_connection = connection;
@@ -92,7 +96,7 @@ r.connect({ host: 'localhost', port: 28015, db: 'bpm' }, function(err, connectio
 	console.log("Established db connection");
 });
 
-var port = 8000;
+var port = Number(process.env.PORT || 8000);
 
 server.listen(port);
 
