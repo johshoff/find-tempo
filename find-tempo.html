@@ -5,7 +5,7 @@
 		<meta charset='utf-8'>
 		<title></title>
 		<!--link rel='stylesheet' type='text/css' href='style.css'></link-->
-		<!--script type='text/javascript' src='jquery-1.7.1.min.js'></script-->
+		<script type='text/javascript' src='d3.min.js'></script>
 		<style type='text/css'>
 		body {
 			font-family: gill sans, helvetica, arial, sans-serif;
@@ -29,13 +29,13 @@
 		h3 {
 			margin-top: 3em;
 		}
-		.latest-songs {
+		#songlist {
 			background: #eee;
 		}
-		.latest-songs tr:nth-child(odd) {
+		#songlist tr:nth-child(odd) {
 			background: #ddd;
 		}
-		.latest-songs a {
+		#songlist a {
 			color: #338;
 			text-decoration: none;
 		}
@@ -44,8 +44,11 @@
 			var samples = [];
 			var symbol_off_timeouts = 0;
 
-			onkeydown = function()
+			onkeydown = function(ev)
 			{
+				if (!ev.altKey)
+					return;
+
 				samples.push(new Date());
 				var sum_delta = 0;
 				var sum_bpm = 0;
@@ -86,7 +89,28 @@
 			save = function(button)
 			{
 				button.disabled = true;
-				setTimeout(function() { button.disabled = false; }, 1000);
+
+				var data = {
+					uri          : document.getElementById('spotify-uri'  ).value,
+					notes        : document.getElementById('notes'        ).value,
+					author       : document.getElementById('author'       ).value,
+					bpm_avg_delta: parseFloat(document.getElementById('bpm-avg-delta').innerText),
+					bpm_avg_bpm  : parseFloat(document.getElementById('bpm-avg-bpm'  ).innerText),
+					bpm_median   : parseFloat(document.getElementById('bpm-median'   ).innerText)
+				};
+
+				d3.xhr('bpms').post(JSON.stringify(data), function (err, data) {
+					if (err)
+					{
+						button.disabled = false;
+						alert('Failed saving');
+						return;
+					}
+					console.log(data);
+					refresh_list(function() {
+						button.disabled = false;
+					});
+				});
 			}
 			restart = function()
 			{
@@ -94,6 +118,43 @@
 				document.getElementById('bpm-avg-delta').innerText = '?';
 				document.getElementById('bpm-avg-bpm')  .innerText = '?';
 				document.getElementById('bpm-median')   .innerText = '?';
+			}
+			var author_key = 'bpm_author_name';
+			savename = function(name)
+			{
+				localStorage[author_key] = name;
+			}
+			onload = function()
+			{
+				var author = localStorage[author_key];
+				if (author)
+					document.getElementById('author').value = author;
+			}
+			refresh_list = function(callback)
+			{
+				d3.json('bpms', function (err, json) {
+					if (err)
+					{
+						return console.warn('Could not load data');
+					}
+					else
+					{
+						var table = d3.select('#songlist');//.append('table');
+						var enter_node = table.selectAll('.entry').data(json, function (d) { return d.id; }).enter().append('tr');
+
+						enter_node.attr('class', 'entry');
+						enter_node.append('td').text(function (d) { return d.artist; });
+						enter_node.append('td').append('a').attr('href', function (d) { return d.uri.replace(/:/g, '/').replace(/^spotify/, 'http://open.spotify.com'); })
+			                       	   	   	   .text(function (d) { if (d.title) return d.title; else return d.uri; });
+						enter_node.append('td').text(function (d) { return d.bpm_avg_delta; });
+						enter_node.append('td').text(function (d) { return d.bpm_avg_bpm; });
+						enter_node.append('td').text(function (d) { return d.bpm_median; });
+						enter_node.append('td').text(function (d) { return d.notes; });
+					}
+
+					if (callback)
+						callback();
+				});
 			}
 		</script>
 		<script type="text/javascript">
@@ -103,6 +164,7 @@
 		</script>
 	</head>
 	<body>
+		<p><em>Press ALT to sample a beat</em>
 		<table class='measurements'>
 			<tr><th>Method         <th>BPM
 			<tr><td>Avgerage delta <td><span id="bpm-avg-delta">?</span>
@@ -121,21 +183,18 @@
 		<table class="submission">
 			<tr><td><label for='spotify-uri'> Spotify URI:          </label> <td><input id='spotify-uri'></input>
 			<tr><td><label for='notes'>       Notes:                </label> <td><input id='notes'></input>
-			<tr><td><label for='your-name'>   Your name (optional): </label> <td><input id='your-name'></input>
+			<tr><td><label for='author'>      Your name (optional): </label> <td><input id='author' onchange="savename(this.value)"></input>
 			</table>
 		<input type="button" value="save bpm" onclick="save(this)">
 
-		<h3>Most recently BMPed</h3>
-		<table class='latest-songs'>
-			<tr><th>Artist<th>Title<th>Avg Delta<th>Avg BMP<th>Median<th>Notes
-			<tr><td>The Stolen Sweets<td><a href="http://open.spotify.com/track/5QLGvlnHJJDl03tYMtZzUZ">Minnie The Moocher's Wedding Day       </a><td> 105<td> 105<td> 105<td>
-			<tr><td>The Stolen Sweets<td><a href="http://open.spotify.com/track/7usfsaX15xU4emmE9A78di">Shuffle Off To Buffalo                 </a><td> 120<td> 120<td> 120<td>Sometimes half
-			<tr><td>The Stolen Sweets<td><a href="http://open.spotify.com/track/5oJtUh3UyGn8NC7DW6TaU7">St. James Infirmary                    </a><td> 124<td> 124<td> 124<td>
-			<tr><td>The Stolen Sweets<td><a href="http://open.spotify.com/track/388tN01Ck3Y6PzMm0rNHJX">The Sentimental Gentleman From Georgia </a><td> 127<td> 127<td> 127<td>
-			<tr><td>The Stolen Sweets<td><a href="http://open.spotify.com/track/5VTzP8WqOSVNRl6FVW9R9G">When I Take My Sugar To Tea            </a><td> 133<td> 133<td> 133<td>Sometimes double
-			<tr><td>The Stolen Sweets<td><a href="http://open.spotify.com/track/6lZAXP3LMtit2ZDYdHxXv4">Between The Devil And The Deep Blue Sea</a><td> 124<td> 124<td> 124<td>
+		<h3>Most recently BPMed</h3>
+		<table id='songlist'>
+			<tr><th>Artist<th>Title<th>Avg Delta<th>Avg BPM<th>Median<th>Notes
 		</table>
 
+		<script type="text/javascript">
+		refresh_list();
+		</script>
 		<script type="text/javascript">
 		if (document.location.hostname !== "0.0.0.0" && document.location.hostname !== "127.0.0.1")
 		{

@@ -1,0 +1,8 @@
+[
+{author: "johannes", added: r.time(2012, 1, 1, 12, 00, 00, 'Z'), artist: "The Stolen Sweets", uri: "spotify:track:5QLGvlnHJJDl03tYMtZzUZ", title: "Minnie The Moocher's Wedding Day"       , bpm_avg_delta: 105, bpm_avg_bpm: 105, bpm_median: 105, notes:"" },
+{author: "johannes", added: r.time(2012, 1, 1, 12, 01, 00, 'Z'), artist: "The Stolen Sweets", uri: "spotify:track:7usfsaX15xU4emmE9A78di", title: "Shuffle Off To Buffalo"                 , bpm_avg_delta: 120, bpm_avg_bpm: 120, bpm_median: 120, notes:"Sometimes half" },
+{author: "johannes", added: r.time(2012, 1, 1, 12, 02, 00, 'Z'), artist: "The Stolen Sweets", uri: "spotify:track:5oJtUh3UyGn8NC7DW6TaU7", title: "St. James Infirmary"                    , bpm_avg_delta: 124, bpm_avg_bpm: 124, bpm_median: 124, notes:"" },
+{author: "johannes", added: r.time(2012, 1, 1, 12, 03, 00, 'Z'), artist: "The Stolen Sweets", uri: "spotify:track:388tN01Ck3Y6PzMm0rNHJX", title: "The Sentimental Gentleman From Georgia" , bpm_avg_delta: 127, bpm_avg_bpm: 127, bpm_median: 127, notes:"" },
+{author: "johannes", added: r.time(2012, 1, 1, 12, 04, 00, 'Z'), artist: "The Stolen Sweets", uri: "spotify:track:5VTzP8WqOSVNRl6FVW9R9G", title: "When I Take My Sugar To Tea"            , bpm_avg_delta: 133, bpm_avg_bpm: 133, bpm_median: 133, notes:"Sometimes double" },
+{author: "johannes", added: r.time(2012, 1, 1, 12, 05, 00, 'Z'), artist: "The Stolen Sweets", uri: "spotify:track:6lZAXP3LMtit2ZDYdHxXv4", title: "Between The Devil And The Deep Blue Sea", bpm_avg_delta: 124, bpm_avg_bpm: 124, bpm_median: 124, notes:"" }
+]
