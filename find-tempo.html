@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv='Content-type: text/html; charset=utf-8'>
+		<meta charset='utf-8'>
+		<title></title>
+		<!--link rel='stylesheet' type='text/css' href='style.css'></link-->
+		<!--script type='text/javascript' src='jquery-1.7.1.min.js'></script-->
+		<style type='text/css'>
+		</style>
+		<script type='text/javascript'>
+			var samples = [];
+			onkeydown = function()
+			{
+				samples.push(new Date());
+				var sum_delta = 0;
+				var sum_bpm = 0;
+				var count_delta = 0;
+				var all_deltas = [];
+				for (i in samples)
+				{
+					if (i > 0)
+					{
+						var delta_ms = samples[i] - samples[i-1];
+						all_deltas.push(delta_ms);
+						count_delta++;
+						sum_delta += delta_ms;
+						sum_bpm += 60000 / delta_ms;
+					}
+				}
+
+				var avg_delta_ms = (sum_delta / count_delta);
+				document.getElementById('bpm-avg-delta').innerText = (60000 / avg_delta_ms).toFixed(1);
+
+				var avg_bpm = (sum_bpm / count_delta);
+				document.getElementById('bpm-avg-bpm').innerText = avg_bpm.toFixed(1);
+
+				all_deltas.sort();
+				document.getElementById('bpm-median').innerText = (60000 / all_deltas[Math.floor(all_deltas.length / 2)]).toFixed(1);
+			}
+		</script>
+		<script type="text/javascript">
+  	  	  var _gaq = _gaq || [];
+  	  	  _gaq.push(['_setAccount', 'UA-3865201-3']);
+  	  	  _gaq.push(['_trackPageview']);
+		</script>
+	</head>
+	<body>
+		BPM (avg delta): <span id="bpm-avg-delta"></span><br>
+		BPM (avg bpm): <span id="bpm-avg-bpm"></span><br>
+		BPM (median): <span id="bpm-median"></span>
+
+		<script type="text/javascript">
+  	  	  (function() {
+    		var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    		ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  	  	  })();
+		</script>
+		<!--
+		spotify:user:johshoff:playlist:0my1D41svUY00dJjzYYmEt
+		1. 105
+		2. 120-121 (eller dobbelt)
+		3. 124
+		4. 127
+		5. 133 (eller halve)
+		6. 124
+		-->
+	</body>
+</html>
