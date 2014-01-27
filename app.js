@@ -87,8 +87,8 @@ var db_connection = null;
 r.connect({ host:    process.env.RETHINKDB_HOST || 'localhost',
             port:    process.env.RETHINKDB_PORT || 28015,
             authKey: process.env.RETHINKDB_AUTH,
-            db: 'bpm'
-          }, function(err, connection) {
+			db: 'bpm' 
+		  }, function(err, connection) {
 	if (err) throw err;
 
 	db_connection = connection;
