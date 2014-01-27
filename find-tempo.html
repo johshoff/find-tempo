@@ -44,6 +44,8 @@
 			var samples = [];
 			var symbol_off_timeouts = 0;
 
+			var json_host = (document.location.hostname === "johanneshoff.com") ? 'http://find-tempo.herokuapp.com/' : '';
+
 			onkeydown = function(ev)
 			{
 				if (!ev.altKey)
@@ -99,7 +101,7 @@
 					bpm_median   : parseFloat(document.getElementById('bpm-median'   ).innerText)
 				};
 
-				d3.xhr('bpms').post(JSON.stringify(data), function (err, data) {
+				d3.xhr(json_host+'bpms').post(JSON.stringify(data), function (err, data) {
 					if (err)
 					{
 						button.disabled = false;
@@ -132,7 +134,7 @@
 			}
 			refresh_list = function(callback)
 			{
-				d3.json('bpms', function (err, json) {
+				d3.json(json_host+'bpms', function (err, json) {
 					if (err)
 					{
 						return console.warn('Could not load data');
