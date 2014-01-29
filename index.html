@@ -46,27 +46,30 @@
 
 			var json_host = (document.location.hostname === "johanneshoff.com") ? 'http://find-tempo.herokuapp.com/' : '';
 
+			get_deltas = function()
+			{
+				var deltas = [];
+				for (i in samples)
+				{
+					if (i > 0)
+					{
+						var delta_ms = samples[i] - samples[i-1];
+						deltas.push(delta_ms);
+					}
+				}
+				return deltas;
+			}
+
 			onkeydown = function(ev)
 			{
 				if (!ev.altKey)
 					return;
 
 				samples.push(new Date());
-				var sum_delta = 0;
-				var sum_bpm = 0;
-				var count_delta = 0;
-				var all_deltas = [];
-				for (i in samples)
-				{
-					if (i > 0)
-					{
-						var delta_ms = samples[i] - samples[i-1];
-						all_deltas.push(delta_ms);
-						count_delta++;
-						sum_delta += delta_ms;
-						sum_bpm += 60000 / delta_ms;
-					}
-				}
+				var deltas      = get_deltas();
+				var sum_delta   = deltas.reduce(function(acc,delta_ms) { return acc + delta_ms;       }, 0);
+				var sum_bpm     = deltas.reduce(function(acc,delta_ms) { return acc + 60000/delta_ms; }, 0);
+				var count_delta = deltas.length;
 
 				document.getElementById('beat-symbol').setAttribute('fill', '#a81');
 				symbol_off_timeouts += 1;
@@ -85,8 +88,8 @@
 				var avg_bpm = (sum_bpm / count_delta);
 				document.getElementById('bpm-avg-bpm').innerText = avg_bpm.toFixed(1);
 
-				all_deltas.sort();
-				document.getElementById('bpm-median').innerText = (60000 / all_deltas[Math.floor(all_deltas.length / 2)]).toFixed(1);
+				deltas.sort();
+				document.getElementById('bpm-median').innerText = (60000 / deltas[Math.floor(deltas.length / 2)]).toFixed(1);
 			}
 			save = function(button)
 			{
@@ -98,7 +101,8 @@
 					author       : document.getElementById('author'       ).value,
 					bpm_avg_delta: parseFloat(document.getElementById('bpm-avg-delta').innerText),
 					bpm_avg_bpm  : parseFloat(document.getElementById('bpm-avg-bpm'  ).innerText),
-					bpm_median   : parseFloat(document.getElementById('bpm-median'   ).innerText)
+					bpm_median   : parseFloat(document.getElementById('bpm-median'   ).innerText),
+					deltas       : get_deltas()
 				};
 
 				d3.xhr(json_host+'bpms').post(JSON.stringify(data), function (err, data) {
