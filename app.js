@@ -31,7 +31,7 @@ var server = http.createServer(function (request, response) {
 		if (request.method === "GET")
 		{
 			response.writeHead(200, {"Content-Type": "application/json", "Access-Control-Allow-Origin": "http://johanneshoff.com"});
-			r.table('bpm').run(db_connection, function(err, cursor) {
+			r.table('bpm').orderBy(r.desc('added')).run(db_connection, function(err, cursor) {
 				if (err) throw err;
 				cursor.toArray(function(err, array) {
 					if (err) throw err;
