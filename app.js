@@ -12,7 +12,7 @@ var server = http.createServer(function (request, response) {
 	if (parts.pathname === '/')
 	{
 		response.writeHead(200, {"Content-Type": "text/html"});
-		fs.createReadStream('find-tempo.html').pipe(response);
+		fs.createReadStream('index.html').pipe(response);
 	}
 	else if (parts.pathname === '/d3.min.js')
 	{
