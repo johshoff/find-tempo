@@ -32,9 +32,9 @@ var server = http.createServer(function (request, response) {
 		{
 			response.writeHead(200, {"Content-Type": "application/json", "Access-Control-Allow-Origin": "http://johanneshoff.com"});
 			r.table('bpm').orderBy(r.desc('added')).run(db_connection, function(err, cursor) {
-				if (err) throw err;
+				if (err) { console.log(err); throw err; }
 				cursor.toArray(function(err, array) {
-					if (err) throw err;
+					if (err) { console.log(err); throw err; }
 					response.end(JSON.stringify(array));
 				});
 			});
@@ -62,7 +62,7 @@ var server = http.createServer(function (request, response) {
 						console.warn("Failed to get artist and title");
 
 					r.table('bpm').insert(data).run(db_connection, function(err, reply) {
-						if (err) throw err;
+						if (err) { console.log(err); throw err; }
 						console.log('Inserted row');
 						response.end(JSON.stringify(reply));
 					});
@@ -89,7 +89,7 @@ r.connect({ host:    process.env.RETHINKDB_HOST || 'localhost',
             authKey: process.env.RETHINKDB_AUTH,
 			db: 'bpm' 
 		  }, function(err, connection) {
-	if (err) throw err;
+	if (err) { console.log(err); throw err; }
 
 	db_connection = connection;
 	
