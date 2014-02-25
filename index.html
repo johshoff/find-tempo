@@ -40,7 +40,7 @@
 			text-decoration: none;
 		}
 		.detailed-view {
-			display: none;
+			display: none;/**/
 		}
 		.number-column {
 			text-align: right;
@@ -65,6 +65,11 @@
 				}
 				return deltas;
 			}
+
+			var cumsum_x  = 0;
+			var cumsum_y  = 0;
+			var cumsum_xy = 0;
+			var cumsum_x2 = 0;
 
 			onkeydown = function(ev)
 			{
@@ -91,17 +96,30 @@
 					return;
 				}
 
+				// linear regression / least squares
+				{
+					var x = samples.length - 1;
+					var y = samples[x] - samples[0];
+
+					cumsum_x  += x;
+					cumsum_y  += y;
+					cumsum_xy += x*y;
+					cumsum_x2 += x*x;
+				}
+
 				deltas.sort(); // for median
 
 				var avg_delta_ms  = (sum_delta / count_delta);
 				var bpm_avg_delta = (60000 / avg_delta_ms);
 				var bpm_avg_bpm   = (sum_bpm / count_delta);
 				var bpm_median    = (60000 / deltas[Math.floor(deltas.length / 2)]);
-				var bpm_simple    = simple_bpm(bpm_avg_delta, bpm_avg_bpm, bpm_median, samples);
+				var bpm_least_sq  = 60000 / ((cumsum_xy - cumsum_x * cumsum_y / samples.length) / (cumsum_x2 - cumsum_x*cumsum_x / samples.length));
+				var bpm_simple    = simple_bpm(bpm_avg_delta, bpm_avg_bpm, bpm_median, bpm_least_sq, samples);
 
-				document.getElementById('bpm-median')   .innerText = bpm_median   .toFixed(1);
-				document.getElementById('bpm-avg-delta').innerText = bpm_avg_delta.toFixed(1);
-				document.getElementById('bpm-avg-bpm')  .innerText = bpm_avg_bpm  .toFixed(1);
+				document.getElementById('bpm-median')   .innerText = bpm_median   .toFixed(2);
+				document.getElementById('bpm-avg-delta').innerText = bpm_avg_delta.toFixed(2);
+				document.getElementById('bpm-avg-bpm')  .innerText = bpm_avg_bpm  .toFixed(2);
+				document.getElementById('bpm-least-sq') .innerText = bpm_least_sq .toFixed(2);
 				document.getElementById('bpm-simple')   .innerText = bpm_simple;
 			}
 			save = function(button)
@@ -115,6 +133,7 @@
 					bpm_avg_delta: parseFloat(document.getElementById('bpm-avg-delta').innerText),
 					bpm_avg_bpm  : parseFloat(document.getElementById('bpm-avg-bpm'  ).innerText),
 					bpm_median   : parseFloat(document.getElementById('bpm-median'   ).innerText),
+					bpm_least_sq : parseFloat(document.getElementById('bpm-least-sq' ).innerText),
 					deltas       : get_deltas()
 				};
 
@@ -123,6 +142,7 @@
 					{
 						button.disabled = false;
 						alert('Failed saving');
+						console.log(err);
 						return;
 					}
 					console.log(data);
@@ -134,10 +154,15 @@
 			restart = function()
 			{
 				samples = [];
+				cumsum_x  = 0;
+				cumsum_y  = 0;
+				cumsum_xy = 0;
+				cumsum_x2 = 0;
 				document.getElementById('bpm-avg-delta').innerText = '?';
 				document.getElementById('bpm-avg-bpm')  .innerText = '?';
 				document.getElementById('bpm-median')   .innerText = '?';
 				document.getElementById('bpm-simple')   .innerText = '?';
+				document.getElementById('bpm-least-sq') .innerText = '?';
 			}
 			var author_key = 'bpm_author_name';
 			savename = function(name)
@@ -169,7 +194,8 @@
 						enter_node.append('td').text(function (d) { return d.bpm_avg_delta; }).attr('class', 'detailed-view number-column');
 						enter_node.append('td').text(function (d) { return d.bpm_avg_bpm; })  .attr('class', 'detailed-view number-column');
 						enter_node.append('td').text(function (d) { return d.bpm_median; })   .attr('class', 'detailed-view number-column');
-						enter_node.append('td').text(function (d) { return simple_bpm(d.bpm_avg_delta, d.bpm_avg_bpm, d.bpm_median, d.samples); }).attr('class', 'number-column');;
+						enter_node.append('td').text(function (d) { return d.bpm_least_sq; }) .attr('class', 'detailed-view number-column');
+						enter_node.append('td').text(function (d) { return simple_bpm(d.bpm_avg_delta, d.bpm_avg_bpm, d.bpm_median, d.bpm_least_sq, d.samples); }).attr('class', 'number-column');;
 
 						enter_node.append('td').text(function (d) { return d.notes; });
 					}
@@ -178,8 +204,11 @@
 						callback();
 				});
 			}
-			simple_bpm = function(bpm_avg_delta, bpm_avg_bpm, bpm_median, samples)
+			simple_bpm = function(bpm_avg_delta, bpm_avg_bpm, bpm_median, bpm_least_sq, samples)
 			{
+				if (bpm_least_sq)
+					return Math.round(bpm_least_sq);
+
 				return Math.round((bpm_avg_delta + bpm_avg_bpm + bpm_median) / 3);
 			}
 		</script>
@@ -196,6 +225,7 @@
 			<tr><td>Avgerage delta <td><span id="bpm-avg-delta">?</span>
 			<tr><td>Avgerage bpm   <td><span id="bpm-avg-bpm">?</span>
 			<tr><td>Median bpm     <td><span id="bpm-median">?</span>
+			<tr><td>Least squares  <td><span id="bpm-least-sq">?</span>
 		</ul>
 		</table>
 		<p><b>BPM:</b> <span id="bpm-simple">Press ALT to sample a beat</span>
@@ -217,7 +247,14 @@
 
 		<h3>Most recently BPMed</h3>
 		<table id='songlist'>
-			<tr><th>Artist<th>Title<th class="detailed-view">Avg Delta<th class="detailed-view">Avg BPM<th class="detailed-view">Median<th>BPM<th>Notes
+			<tr><th>Artist
+				<th>Title
+				<th class="detailed-view">Avg Delta
+				<th class="detailed-view">Avg BPM
+				<th class="detailed-view">Median
+				<th class="detailed-view">Least squares
+				<th>BPM
+				<th>Notes
 		</table>
 
 		<script type="text/javascript">
