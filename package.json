@@ -11,7 +11,8 @@
     "node": "0.10.x"
   },
   "dependencies": {
-    "rethinkdb": "1.11.x",
-    "request"  : "2.33.x"
+    "rethinkdb": "1.11.0-4",
+    "request"  : "2.33.x",
+    "newrelic" : "*"
   }
 }
