@@ -46,35 +46,35 @@ router.get('/', function(_req, response, next) {
 
 router.post('/', function(request, response, next) {
   with_db_connection(request, response, function(_req, response, next, db_connection) {
-    var body = '';
 
-    request.on('data', function (data) { body += data; });
-    request.on('end', function () {
-      response.writeHead(200, {"Content-Type": "application/json", "Access-Control-Allow-Origin": "http://johanneshoff.com"});
-      var data = JSON.parse(body);
-      data.added = r.now();
+    request.on('data', function (new_bpm) {
+      request.on('end', function () {
+        response.writeHead(200, {"Content-Type": "application/json", "Access-Control-Allow-Origin": "http://johanneshoff.com"});
+        var data = JSON.parse(new_bpm);
+        data.added = r.now();
 
-      // find song title and artist
-      make_request(SPOTIFY_LOOKUP_URL+data.uri, function (err, _, body) {
-        if (!err)
-        {
-          try {
-            var track_info = JSON.parse(body).track;
-            console.log(track_info);
-            data.artist = track_info.artists[0].name;
-            data.title  = track_info.name;
+        // find song title and artist
+        make_request(SPOTIFY_LOOKUP_URL+data.uri, function (err, _, body) {
+          if (!err)
+          {
+            try {
+              var track_info = JSON.parse(body).track;
+              console.log(track_info);
+              data.artist = track_info.artists[0].name;
+              data.title  = track_info.name;
+            }
+            catch (e) {
+              console.warn("Got response from spotify but failed to parse as expected:", e);
+            }
           }
-          catch (e) {
-            console.warn("Got response from spotify but failed to parse as expected:", e);
-          }
-        }
-        else
-          console.warn("Failed to get artist and title");
+          else
+            console.warn("Failed to get artist and title");
 
-        r.table('bpm').insert(data).run(db_connection, function(err, reply) {
-          if (err) { console.log(err); throw err; }
-          console.log('Inserted row');
-          response.end(JSON.stringify(reply));
+          r.table('bpm').insert(data).run(db_connection, function(err, reply) {
+            if (err) { console.log(err); throw err; }
+            console.log('Inserted row');
+            response.end(JSON.stringify(reply));
+          });
         });
       });
     });
