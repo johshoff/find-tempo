@@ -1,105 +1,51 @@
-require('newrelic');
-var http         = require('http');
-var url          = require('url');
-var fs           = require('fs');
-var r            = require('rethinkdb');
-var make_request = require('request');
+require('newrelic')
+var express = require('express');
+var path = require('path');
+var logger = require('morgan');
 
-var spotify_lookup_url='http://ws.spotify.com/lookup/1/.json?uri='
+var routes = require('./routes/bpms');
 
-var server = http.createServer(function (request, response) {
-	var parts = url.parse(request.url);
+var app = express();
+//
+// view engine setup
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'jade');
 
-	if (parts.pathname === '/')
-	{
-		response.writeHead(200, {"Content-Type": "text/html"});
-		fs.createReadStream('index.html').pipe(response);
-	}
-	else if (parts.pathname === '/d3.min.js')
-	{
-		response.writeHead(200, {"Content-Type": "text/javascript"});
-		fs.createReadStream('d3.min.js').pipe(response);
-	}
-	else if (parts.pathname === '/bpms')
-	{
-		if (!db_connection)
-		{
-			response.writeHead(500, {"Content-Type": "text/plain"});
-			response.end("No DB connection");
-			return;
-		}
+app.use(logger('dev'));
+app.use(express.static(path.join(__dirname, 'static')));
 
-		if (request.method === "GET")
-		{
-			response.writeHead(200, {"Content-Type": "application/json", "Access-Control-Allow-Origin": "http://johanneshoff.com"});
-			r.table('bpm').orderBy(r.desc('added')).run(db_connection, function(err, cursor) {
-				if (err) { console.log(err); throw err; }
-				cursor.toArray(function(err, array) {
-					if (err) { console.log(err); throw err; }
-					response.end(JSON.stringify(array));
-				});
-			});
-		}
-		else if (request.method === "POST")
-		{
-			var body = '';
+app.use('/bpms', routes);
 
-			request.on('data', function (data) { body += data; });
-			request.on('end', function () {
-				response.writeHead(200, {"Content-Type": "application/json", "Access-Control-Allow-Origin": "http://johanneshoff.com"});
-				var data = JSON.parse(body);
-				data.added = r.now();
-
-				// find song title and artist
-				make_request(spotify_lookup_url+data.uri, function (err, _, body) {
-					if (!err)
-					{
-						var track_info = JSON.parse(body).track;
-						console.log(track_info);
-						data.artist = track_info.artists[0].name;
-						data.title  = track_info.name;
-					}
-					else
-						console.warn("Failed to get artist and title");
-
-					r.table('bpm').insert(data).run(db_connection, function(err, reply) {
-						if (err) { console.log(err); throw err; }
-						console.log('Inserted row');
-						response.end(JSON.stringify(reply));
-					});
-				});
-			});
-		}
-		else
-		{
-			response.writeHead(405, {"Content-Type": "text/plain"});
-			response.end('Method not allowed');
-		}
-	}
-	else
-	{
-		response.writeHead(404, {"Content-Type": "text/plain"});
-		response.end('Not found');
-	}
+// catch 404 and forward to error handler
+app.use(function(req, res, next) {
+  var err = new Error('Not Found');
+  err.status = 404;
+  next(err);
 });
 
-var db_connection = null;
+// error handlers
 
-r.connect({ host:    process.env.RETHINKDB_HOST || 'localhost',
-            port:    process.env.RETHINKDB_PORT || 28015,
-            authKey: process.env.RETHINKDB_AUTH,
-			db: 'bpm' 
-		  }, function(err, connection) {
-	if (err) { console.log(err); throw err; }
+// development error handler
+// will print stacktrace
+if (app.get('env') === 'development') {
+  app.use(function(err, req, res, next) {
+    res.status(err.status || 500);
+    res.render('error', {
+      message: err.message,
+      error: err
+    });
+  });
+}
 
-	db_connection = connection;
-	
-	console.log("Established db connection");
+// production error handler
+// no stacktraces leaked to user
+app.use(function(err, req, res, next) {
+  res.status(err.status || 500);
+  res.render('error', {
+    message: err.message,
+    error: {}
+  });
 });
 
-var port = Number(process.env.PORT || 8000);
 
-server.listen(port);
-
-console.log("Server running at http://localhost:"+port);
-
+module.exports = app;
