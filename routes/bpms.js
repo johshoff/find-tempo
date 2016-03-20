@@ -1,11 +1,11 @@
+'use strict';
+
 var express      = require('express');
 var r            = require('rethinkdb');
 var router       = express.Router();
 var make_request = require('request');
 
-var SPOTIFY_LOOKUP_URL = 'http://ws.spotify.com/lookup/1/.json?uri='
-
-with_db_connection = function() {
+const with_db_connection = function() {
   var db_connection = null;
   r.connect({ host:    process.env.RETHINKDB_HOST || 'localhost',
               port:    process.env.RETHINKDB_PORT || 28015,
@@ -54,21 +54,14 @@ router.post('/', function(request, response, next) {
         data.added = r.now();
 
         // find song title and artist
-        make_request(SPOTIFY_LOOKUP_URL+data.uri, function (err, _, body) {
-          if (!err)
-          {
-            try {
-              var track_info = JSON.parse(body).track;
-              console.log(track_info);
-              data.artist = track_info.artists[0].name;
-              data.title  = track_info.name;
-            }
-            catch (e) {
-              console.warn("Got response from spotify but failed to parse as expected:", e);
-            }
+        getTrackMeta(data.uri, function (err, meta) {
+          if (err) {
+            console.warn(err);
+            // no return: we can proceed without this information
+          } else {
+            data.artist = meta.artist;
+            data.title  = meta.title;
           }
-          else
-            console.warn("Failed to get artist and title");
 
           r.table('bpm').insert(data).run(db_connection, function(err, reply) {
             if (err) { console.log(err); throw err; }
@@ -80,5 +73,43 @@ router.post('/', function(request, response, next) {
     });
   });
 });
+
+function trackLookupUrl(spotifyUri) {
+  const prefix = 'spotify:track:';
+  if (!spotifyUri.startsWith(prefix)) {
+    return null;
+  }
+
+  const trackId = spotifyUri.slice(prefix.length);
+
+  return 'https://api.spotify.com/v1/tracks/' + trackId;
+}
+
+function getTrackMeta(spotifyUri, next) {
+  const lookupUrl = trackLookupUrl(spotifyUri);
+
+  if (!lookupUrl) {
+    return setImmediate(() => next('Invalid spotifyUri'));
+  }
+  console.log(lookupUrl);
+
+  make_request(lookupUrl, function (err, response, body) {
+    if (err || response.statusCode !== 200) {
+      return next('Failed to get artist and title');
+    }
+
+    try {
+      const track_info = JSON.parse(body);
+      console.log(track_info);
+      return next(null, {
+        artist: track_info.artists[0].name,
+        title:  track_info.name
+      });
+    }
+    catch (e) {
+      return next({ message: 'Got response from spotify but failed to parse as expected', e });
+    }
+  });
+}
 
 module.exports = router;
