@@ -52,6 +52,14 @@
 
 			var json_host = (document.location.hostname === "johanneshoff.com") ? 'http://revolver.johanneshoff.com/find-tempo/' : '';
 
+			function set_input_enabled(button, enabled) {
+				button.disabled = !enabled;
+				var input_elements = document.getElementsByClassName('bpm_input');
+				for (var i in input_elements) {
+					input_elements[i].disabled = !enabled;
+				}
+			}
+
 			get_deltas = function()
 			{
 				var deltas = [];
@@ -124,7 +132,7 @@
 			}
 			save = function(button)
 			{
-				button.disabled = true;
+				set_input_enabled(button, false);
 
 				var data = {
 					uri          : document.getElementById('spotify-uri'  ).value,
@@ -140,18 +148,25 @@
 				d3.xhr(json_host+'bpms').post(JSON.stringify(data), function (err, data) {
 					if (err)
 					{
-						button.disabled = false;
+						set_input_enabled(button, true);
 						alert('Failed saving');
 						console.log(err);
 						return;
 					}
 					console.log(data);
 					refresh_list(function() {
-						button.disabled = false;
+						set_input_enabled(button, true);
+
+						// clear data
+						restart();
+						var input_elements = document.getElementsByClassName('bpm_input');
+						for (var i in input_elements) {
+							input_elements[i].value = '';
+						}
 					});
 				});
 			}
-			restart = function()
+			function restart()
 			{
 				samples = [];
 				cumsum_x  = 0;
@@ -161,7 +176,7 @@
 				document.getElementById('bpm-avg-delta').innerText = '?';
 				document.getElementById('bpm-avg-bpm')  .innerText = '?';
 				document.getElementById('bpm-median')   .innerText = '?';
-				document.getElementById('bpm-simple')   .innerText = '?';
+				document.getElementById('bpm-simple')   .innerText = 'Press ALT to sample a beat';
 				document.getElementById('bpm-least-sq') .innerText = '?';
 			}
 			var author_key = 'bpm_author_name';
@@ -270,10 +285,10 @@
 		<p>
 
 		<table class="submission">
-			<tr><td><label for='spotify-uri'> Spotify URI:          </label> <td><input id='spotify-uri' placeholder='spotify:track:idnumberfortrack'></input>
-			<tr><td><label for='notes'>       Notes:                </label> <td><input id='notes'></input>
+			<tr><td><label for='spotify-uri'> Spotify URI:          </label> <td><input class='bpm_input' id='spotify-uri' placeholder='spotify:track:idnumberfortrack'></input>
+			<tr><td><label for='notes'>       Notes:                </label> <td><input class='bpm_input' id='notes'></input>
 			<tr><td><label for='author'>      Your name (optional): </label> <td><input id='author' onchange="savename(this.value)"></input>
-			</table>
+		</table>
 		<input type="button" value="save bpm" onclick="save(this)">
 
 		<h3>Most recently BPMed</h3>
