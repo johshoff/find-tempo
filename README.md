@@ -20,10 +20,13 @@ Install rethinkdb:
 
     docker pull rethinkdb
 
-Run the image:
+With native docker on Mac, run it like follows:
+
+    docker run -p 8080:8080 -p 28015:28015 -p 29015:29015 --name find-tempo-rethinkdb -v "$PWD/find-tempo-db:/data" -d rethinkdb
+    npm start
+
+For boot2docker, try:
 
     docker run --name find-tempo-rethinkdb -v "$PWD/find-tempo-db:/data" -d rethinkdb
-
-Run the application:
-
     RETHINKDB_HOST=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' find-tempo-rethinkdb) npm start
+
