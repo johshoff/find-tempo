@@ -184,20 +184,51 @@
 					}
 					else
 					{
-						var table = d3.select('#songlist');//.append('table');
-						var enter_node = table.selectAll('.entry').data(json, function (d) { return d.id; }).enter().append('tr');
+						var table = document.querySelector('#songlist tbody');
 
-						enter_node.attr('class', 'entry');
-						enter_node.append('td').text(function (d) { return d.artist; });
-						enter_node.append('td').append('a').attr('href', function (d) { return d.uri.replace(/:/g, '/').replace(/^spotify/, 'http://open.spotify.com'); })
-			                       	   	   	   .text(function (d) { if (d.title) return d.title; else return d.uri; });
-						enter_node.append('td').text(function (d) { return d.bpm_avg_delta; }).attr('class', 'detailed-view number-column');
-						enter_node.append('td').text(function (d) { return d.bpm_avg_bpm; })  .attr('class', 'detailed-view number-column');
-						enter_node.append('td').text(function (d) { return d.bpm_median; })   .attr('class', 'detailed-view number-column');
-						enter_node.append('td').text(function (d) { return d.bpm_least_sq; }) .attr('class', 'detailed-view number-column');
-						enter_node.append('td').text(function (d) { return simple_bpm(d.bpm_avg_delta, d.bpm_avg_bpm, d.bpm_median, d.bpm_least_sq, d.samples); }).attr('class', 'number-column');;
+						// empty table
+						while (table.lastChild) {
+							table.removeChild(table.lastChild);
+						}
 
-						enter_node.append('td').text(function (d) { return d.notes; });
+						for (var d of json) {
+							var row = document.createElement('tr');
+
+							function addColumn(text, clazz) {
+								var column = document.createElement('td');
+
+								if (text !== undefined)
+									column.appendChild(document.createTextNode(text));
+
+								if (clazz !== undefined)
+									column.className = clazz;
+
+								row.appendChild(column);
+							}
+
+							addColumn(d.artist);
+
+							{
+								var url = d.uri.replace(/:/g, '/').replace(/^spotify/, 'http://open.spotify.com');
+								var text = d.title || d.uri;
+
+								var td = document.createElement('td');
+								var a = document.createElement('a');
+								a.href = url;
+								a.appendChild(document.createTextNode(text));
+								row.appendChild(a);
+							}
+
+							addColumn(d.bpm_avg_delta, 'detailed-view number-column');
+							addColumn(d.bpm_avg_bpm,   'detailed-view number-column');
+							addColumn(d.bpm_median,    'detailed-view number-column');
+							addColumn(d.bpm_least_sq,  'detailed-view number-column');
+							addColumn(simple_bpm(d.bpm_avg_delta, d.bpm_avg_bpm, d.bpm_median, d.bpm_least_sq, d.samples), 'number-column');
+
+							addColumn(d.notes);
+
+							table.appendChild(row);
+						}
 					}
 
 					if (callback)
@@ -247,6 +278,7 @@
 
 		<h3>Most recently BPMed</h3>
 		<table id='songlist'>
+			<thead>
 			<tr><th>Artist
 				<th>Title
 				<th class="detailed-view">Avg Delta
@@ -255,6 +287,7 @@
 				<th class="detailed-view">Least squares
 				<th>BPM
 				<th>Notes
+			<tbody>
 		</table>
 
 		<script type="text/javascript">
