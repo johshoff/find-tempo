@@ -3,7 +3,7 @@
 var express      = require('express');
 var r            = require('rethinkdb');
 var router       = express.Router();
-var make_request = require('request');
+var https        = require("https");
 
 const with_db_connection = function() {
   var db_connection = null;
@@ -93,22 +93,34 @@ function getTrackMeta(spotifyUri, next) {
   }
   console.log(lookupUrl);
 
-  make_request(lookupUrl, function (err, response, body) {
-    if (err || response.statusCode !== 200) {
+  https.get(lookupUrl, response => {
+    const contentType = response.headers['content-type'];
+    if (response.statusCode !== 200) {
       return next('Failed to get artist and title');
     }
 
-    try {
-      const track_info = JSON.parse(body);
-      console.log(track_info);
-      return next(null, {
-        artist: track_info.artists[0].name,
-        title:  track_info.name
-      });
+    if (contentType != 'application/json') {
+      return next('Unexpected content type: ' + contentType);
     }
-    catch (e) {
-      return next({ message: 'Got response from spotify but failed to parse as expected', e });
-    }
+
+    let body = "";
+    response.on("data", chunk => { body += chunk; });
+    response.on("end", () => {
+      try {
+        const track_info = JSON.parse(body);
+        console.log(track_info);
+        return next(null, {
+          artist: track_info.artists[0].name,
+          title:  track_info.name
+        });
+      }
+      catch (e) {
+        return next({ message: 'Got response from spotify but failed to parse as expected', e });
+      }
+    });
+  })
+  .on('error', err => {
+    return next(err);
   });
 }
 
