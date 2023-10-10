@@ -16,7 +16,6 @@
     "express": "~4.13.1",
     "jade": "~1.11.0",
     "morgan": "~1.6.1",
-    "rethinkdb": "2.2.2",
-    "newrelic" : "*"
+    "rethinkdb": "2.2.2"
   }
 }
