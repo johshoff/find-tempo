@@ -71,52 +71,43 @@ function trackLookupUrl(spotifyUri) {
   return 'https://api.spotify.com/v1/tracks/' + trackId;
 }
 
-function getTrackMeta(spotifyUri) {
-  return new Promise((resolve, reject) => {
-    getTrackMetaCallback(spotifyUri, (err, result) => {
-      if (err) reject(err);
-      else resolve(result);
-    });
-  });
+try{
+  console.log(await getTrackMeta("spotify:track:3NVLXCwpfZaCH00tJP5jUu"));
+}
+catch (e) {
+  console.error(e);
+  throw e;
 }
 
-function getTrackMetaCallback(spotifyUri, next) {
+async function getTrackMeta(spotifyUri) {
   const lookupUrl = trackLookupUrl(spotifyUri);
 
   if (!lookupUrl) {
-    return setImmediate(() => next('Invalid spotifyUri'));
+    throw 'Invalid spotifyUri';
   }
   console.log(lookupUrl);
 
-  https.get(lookupUrl, response => {
-    const contentType = response.headers['content-type'];
-    if (response.statusCode !== 200) {
-      return next('Failed to get artist and title');
-    }
+  const response = await fetch(lookupUrl);
+  if (response.statusCode !== 200) {
+    throw 'Failed to get artist and title';
+  }
 
-    if (contentType != 'application/json') {
-      return next('Unexpected content type: ' + contentType);
-    }
+  const contentType = response.headers.get('content-type');
+  if (contentType != 'application/json') {
+    throw `Unexpected content type: ${contentType}`;
+  }
 
-    let body = "";
-    response.on("data", chunk => { body += chunk; });
-    response.on("end", () => {
-      try {
-        const track_info = JSON.parse(body);
-        console.log(track_info);
-        return next(null, {
-          artist: track_info.artists[0].name,
-          title:  track_info.name
-        });
-      }
-      catch (e) {
-        return next({ message: 'Got response from spotify but failed to parse as expected', e });
-      }
-    });
-  })
-  .on('error', err => {
-    return next(err);
-  });
+  try {
+    const track_info = await response.json();
+    console.log(track_info);
+    return {
+      artist: track_info.artists[0].name,
+      title:  track_info.name
+    };
+  }
+  catch (e) {
+    throw { message: 'Got response from spotify but failed to parse as expected', e };
+  }
 }
 
 export default router;
