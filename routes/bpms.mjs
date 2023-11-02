@@ -12,7 +12,7 @@ const router = express.Router();
 
 router.use((request, response, next) => {
   response.set("Access-Control-Allow-Origin", "https://johanneshoff.com");
-  next(request, response);
+  next();
 });
 
 
