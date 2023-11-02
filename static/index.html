@@ -5,7 +5,6 @@
 		<meta charset='utf-8'>
 		<title></title>
 		<!--link rel='stylesheet' type='text/css' href='style.css'></link-->
-		<script type='text/javascript' src='d3.min.js'></script>
 		<style type='text/css'>
 		body {
 			font-family: gill sans, helvetica, arial, sans-serif;
@@ -197,14 +196,13 @@
 			}
 			refresh_list = function(callback)
 			{
-				d3.json(json_host+'bpms', function (err, json) {
-					if (err)
-					{
+				fetch(json_host+'bpms')
+					.catch(err => {
 						return console.warn('Could not load data');
-					}
-					else
-					{
-						var table = document.querySelector('#songlist tbody');
+					})
+					.then(async result => {
+						const json = await result.json();
+						const table = document.querySelector('#songlist tbody');
 
 						// empty table
 						while (table.lastChild) {
@@ -249,11 +247,10 @@
 
 							table.appendChild(row);
 						}
-					}
 
-					if (callback)
-						callback();
-				});
+						if (callback)
+							callback();
+					});
 			}
 			simple_bpm = function(bpm_avg_delta, bpm_avg_bpm, bpm_median, bpm_least_sq, samples)
 			{
