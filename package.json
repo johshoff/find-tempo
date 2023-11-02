@@ -5,7 +5,8 @@
   "main": "app.mjs",
   "scripts": {
     "start": "node ./bin/www",
-    "seed_db": "node seed_db.mjs"
+    "seed_db": "node seed_db.mjs",
+    "retry_missing_metadata": "node retry_missing_metadata.mjs"
   },
   "author": "Johannes Hoff",
   "engines": {
