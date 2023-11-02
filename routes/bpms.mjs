@@ -17,6 +17,9 @@ router.get('/', async function(_req, response) {
   response.writeHead(200, {"Content-Type": "application/json", "Access-Control-Allow-Origin": "http://johanneshoff.com"});
 
   const results = await db.all(`select * from bpms order by added desc`);
+  for (const row of results) {
+    row.deltas = JSON.parse(row.deltas);
+  };
 
   response.end(JSON.stringify(results));
 });
@@ -47,7 +50,7 @@ router.post('/', jsonParser, async function(request, response) {
     [
       uuidv4(), added, meta.artist, meta.title,
       data.uri, data.author, data.notes, data.bpm_avg_bpm,
-      data.bpm_avg_delta, data.bpm_least_sq, data.bpm_median, data.deltas
+      data.bpm_avg_delta, data.bpm_least_sq, data.bpm_median, JSON.stringify(data.deltas)
     ]);
   }
   catch (e) {
