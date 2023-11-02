@@ -8,7 +8,7 @@ var app = express();
 //
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+app.set('view engine', 'pug');
 
 app.use(logger('dev'));
 app.use(express.static(path.join(__dirname, 'static')));
@@ -31,6 +31,7 @@ routes.then(routes => {
     app.use(function(err, req, res, next) {
       res.status(err.status || 500);
       res.render('error', {
+        title: err.message,
         message: err.message,
         error: err
       });
@@ -42,6 +43,7 @@ routes.then(routes => {
   app.use(function(err, req, res, next) {
     res.status(err.status || 500);
     res.render('error', {
+      title: err.message,
       message: err.message,
       error: {}
     });
