@@ -14,7 +14,7 @@ const router = express.Router();
 router.get('/', async function(_req, response) {
   const db = await getDatabase();
 
-  response.writeHead(200, {"Content-Type": "application/json", "Access-Control-Allow-Origin": "http://johanneshoff.com"});
+  response.writeHead(200, {"Content-Type": "application/json", "Access-Control-Allow-Origin": "https://johanneshoff.com"});
 
   const results = await db.all(`select * from bpms order by added desc`);
   for (const row of results) {
@@ -60,7 +60,7 @@ router.post('/', jsonParser, async function(request, response) {
   }
 
   console.log('Inserted row');
-  response.writeHead(202, {"Access-Control-Allow-Origin": "http://johanneshoff.com"});
+  response.writeHead(202, {"Access-Control-Allow-Origin": "https://johanneshoff.com"});
   response.end();
 });
 
