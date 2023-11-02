@@ -3,6 +3,10 @@
 import express from 'express';
 import https from 'https';
 import { getDatabase } from "../db.mjs";
+import { v4 as uuidv4 } from 'uuid';
+import bodyParser from 'body-parser';
+
+var jsonParser = bodyParser.json()
 
 const router = express.Router();
 
@@ -16,39 +20,49 @@ router.get('/', async function(_req, response) {
   response.end(JSON.stringify(results));
 });
 
-router.post('/', function(request, response, next) {
-  with_db_connection(request, response, function(_req, response, next, db_connection) {
+router.post('/', jsonParser, async function(request, response) {
+  const data = request.body;
 
-    request.on('data', function (new_bpm) {
-      request.on('end', function () {
-        response.writeHead(200, {"Content-Type": "application/json", "Access-Control-Allow-Origin": "http://johanneshoff.com"});
-        var data = JSON.parse(new_bpm);
-        data.added = r.now();
+  const added = new Date().toISOString();
 
-        // find song title and artist
-        getTrackMeta(data.uri, function (err, meta) {
-          if (err) {
-            console.warn(err);
-            // no return: we can proceed without this information
-          } else {
-            data.artist = meta.artist;
-            data.title  = meta.title;
-          }
+  // find song title and artist
+  let meta = {};
+  try {
+    meta = await getTrackMeta(data.uri);
+  }
+  catch (err) {
+    console.warn(err);
+    // no return: we can proceed without this information
+  }
 
-          r.table('bpm').insert(data).run(db_connection, function(err, reply) {
-            if (err) { console.log(err); throw err; }
-            console.log('Inserted row');
-            response.end(JSON.stringify(reply));
-          });
-        });
-      });
-    });
-  });
+  const db = await getDatabase();
+
+  try {
+    await db.run(`insert into bpms (
+      id, added, artist, title,
+      uri, author, notes, bpm_avg_bpm,
+      bpm_avg_delta, bpm_least_sq, bpm_median, deltas
+    ) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      uuidv4(), added, meta.artist, meta.title,
+      data.uri, data.author, data.notes, data.bpm_avg_bpm,
+      data.bpm_avg_delta, data.bpm_least_sq, data.bpm_median, data.deltas
+    ]);
+  }
+  catch (e) {
+    response.writeHead(400);
+    response.end();
+    return;
+  }
+
+  console.log('Inserted row');
+  response.writeHead(202, {"Access-Control-Allow-Origin": "http://johanneshoff.com"});
+  response.end();
 });
 
 function trackLookupUrl(spotifyUri) {
   const prefix = 'spotify:track:';
-  if (!spotifyUri.startsWith(prefix)) {
+  if (!spotifyUri || !spotifyUri.startsWith || !spotifyUri.startsWith(prefix)) {
     return null;
   }
 
@@ -57,7 +71,16 @@ function trackLookupUrl(spotifyUri) {
   return 'https://api.spotify.com/v1/tracks/' + trackId;
 }
 
-function getTrackMeta(spotifyUri, next) {
+function getTrackMeta(spotifyUri) {
+  return new Promise((resolve, reject) => {
+    getTrackMetaCallback(spotifyUri, (err, result) => {
+      if (err) reject(err);
+      else resolve(result);
+    });
+  });
+}
+
+function getTrackMetaCallback(spotifyUri, next) {
   const lookupUrl = trackLookupUrl(spotifyUri);
 
   if (!lookupUrl) {

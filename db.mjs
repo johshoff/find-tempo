@@ -3,6 +3,8 @@
 import { open } from 'node:fs/promises';
 import sqlite3 from 'sqlite3';
 
+let db = null;
+
 function run(db, query, args) {
   return new Promise((resolve, reject) => {
     db.run(query, args,
@@ -72,7 +74,15 @@ function connect() {
   }
 }
 
-export async function getDatabase() {
+export function getDatabase() {
+  if (db !== null) {
+    return db;
+  }
+  db = getDatabaseInternal();
+  return db;
+}
+
+async function getDatabaseInternal() {
   const db = connect();
   await db.run('PRAGMA foreign_keys = ON');
 

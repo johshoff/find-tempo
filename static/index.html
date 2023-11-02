@@ -145,14 +145,19 @@
 					deltas       : get_deltas()
 				};
 
-				d3.xhr(json_host+'bpms').post(JSON.stringify(data), function (err, data) {
-					if (err)
-					{
-						set_input_enabled(button, true);
-						alert('Failed saving');
-						console.log(err);
-						return;
-					}
+				fetch(json_host+'bpms', {
+					method: 'POST',
+					headers: new Headers({
+						'Content-type': 'application/json'
+					}),
+					body: JSON.stringify(data),
+				})
+				.catch(err => {
+					set_input_enabled(button, true);
+					alert('Failed saving');
+					console.log(err);
+				})
+				.then(data => {
 					console.log(data);
 					refresh_list(function() {
 						set_input_enabled(button, true);
