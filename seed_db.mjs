@@ -1,20 +1,21 @@
 'use strict';
 
 import { getDatabase } from "./db.mjs";
+import { open } from 'node:fs/promises';
 
 const db = await getDatabase();
 
-await db.run(`insert into bpms values (
-	"0b22d361-9dde-43f4-ac6b-142c433b100f",
-	"2014-04-28T03:03:54.849Z",
-	"Louis Jordan",
-	"A Man's Best Friend Is A Bed",
-	"spotify:track:3NVLXCwpfZaCH00tJP5jUu",
-	"johannes",
-	"",
-	150.0,
-	150.0,
-	150.0,
-	150.0,
-	"[360, 408, 407]"
-);`)
+const seedFile = process.argv[2] || "seed.json";
+const file = await open(seedFile);
+const data = await file.readFile('utf8');
+
+await db.run(`insert into bpms (
+    id, added, artist, title,
+    uri, author, notes, bpm_avg_bpm,
+    bpm_avg_delta, bpm_least_sq, bpm_median, deltas
+  )
+  select
+    value->>'id', value->>'added', value->>'artist', value->>'title',
+    value->>'uri', value->>'author', value->>'notes', value->>'bpm_avg_bpm',
+    value->>'bpm_avg_delta', value->>'bpm_least_sq', value->>'bpm_median', value->>'deltas'
+  from json_each(?)`, [data]);

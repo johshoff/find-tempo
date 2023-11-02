@@ -3,8 +3,8 @@ create table bpms (
 	   check (id glob '[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]-[0-9a-f][0-9a-f][0-9a-f][0-9a-f]-[0-9a-f][0-9a-f][0-9a-f][0-9a-f]-[0-9a-f][0-9a-f][0-9a-f][0-9a-f]-[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]'),
 	added text not null,          -- RFC3339, e.g. "2014-04-28T03:03:54.849Z"
 
-	artist text not null,         -- e.g. "Louis Jordan"
-	title text not null,          -- e.g. "A Man's Best Friend Is A Bed"
+	artist text,                  -- e.g. "Louis Jordan", null if unresolved from spotify
+	title text,                   -- e.g. "A Man's Best Friend Is A Bed", null if unresolved from spotify
 	uri text not null,            -- e.g. "spotify:track:3NVLXCwpfZaCH00tJP5jUu"
 
 	author text not null,         -- e.g. "johannes"

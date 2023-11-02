@@ -1,0 +1,56 @@
+[
+    {
+        "added": "2014-05-07T14:40:00.640Z",
+        "artist": "Movits!",
+        "author": "",
+        "bpm_avg_bpm": 201.91,
+        "bpm_avg_delta": 201.44,
+        "bpm_least_sq": 200.23,
+        "bpm_median": 202.7,
+        "deltas": [
+            248, 296, 280, 304, 312, 288, 312, 288, 304, 312, 296, 312, 288, 296, 320, 296, 296, 288, 288, 320,
+            304, 304, 288, 296, 289, 303, 320, 288, 304, 288, 304, 296, 304, 312, 288, 304, 304, 312, 271, 313,
+            304, 295, 296, 305, 296, 304, 263 ],
+        "id": "94155aa0-c9c3-4e1d-873f-f51b1e243aa5",
+        "notes": "",
+        "title": "Fel del av gården",
+        "uri": "spotify:track:0XYyQel2cYzXP0E2HGk0eB"
+    },
+    {
+        "added": "2014-04-28T03:11:41.105Z",
+        "artist": "Jonathan Stout And His Campus Five, Featuring Hilary Alexander",
+        "author": "johannes",
+        "bpm_avg_bpm": 262.32,
+        "bpm_avg_delta": 261.75,
+        "bpm_least_sq": 260.77,
+        "bpm_median": 266.67,
+        "deltas": [
+            207, 240, 224, 224, 224, 208, 224, 240, 240, 216, 240, 224, 232, 224, 232, 224, 240, 228, 236, 224,
+            232, 240, 223, 233, 232, 232, 224, 231, 233, 240, 232, 240, 231, 225, 240, 232, 224, 215, 217, 224,
+            224, 256, 224, 256, 240, 248, 224, 240, 248, 232, 224, 224, 224, 248, 232, 224, 207, 225, 216, 231,
+            225, 223, 217, 232, 224, 248, 231, 217, 224, 232, 224, 215, 216, 225, 224, 216, 263, 241, 232, 232,
+            216, 239, 217, 224
+        ],
+        "id": "1ec40eff-2bb6-48b1-bbcf-a80ded78f090",
+        "notes": "",
+        "title": "Dark Eyes",
+        "uri": "spotify:track:3WfP2AJvMYfHZQybvORH88"
+    },
+    {
+        "added": "2014-04-28T03:03:54.849Z",
+        "artist": "Louis Jordan",
+        "author": "johannes",
+        "bpm_avg_bpm": 147.28,
+        "bpm_avg_delta": 146.86,
+        "bpm_least_sq": 146.13,
+        "bpm_median": 147.06,
+        "deltas": [
+            360, 408, 407, 417, 432, 384, 408, 464, 408, 416, 391, 393, 416, 375, 425, 416, 408, 456, 391, 393,
+            416, 400, 432, 408, 423, 417, 376, 416, 392
+        ],
+        "id": "09c2ff06-d52b-4b85-b9d7-e3c0e389fd2f",
+        "notes": "",
+        "title": "A Man's Best Friend Is A Bed",
+        "uri": "spotify:track:3NVLXCwpfZaCH00tJP5jUu"
+    }
+]
