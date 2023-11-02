@@ -11,7 +11,12 @@ var jsonParser = bodyParser.json()
 const router = express.Router();
 
 router.use((request, response, next) => {
-  response.set("Access-Control-Allow-Origin", "https://johanneshoff.com");
+  response.set({
+    "Access-Control-Allow-Origin": "https://johanneshoff.com",
+    "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Max-Age": 86400,
+  });
   next();
 });
 
