@@ -1,12 +1,28 @@
 'use strict';
 
+function trimPrefix(string, prefix) {
+  if (string.startsWith(prefix)) {
+    return string.slice(prefix.length);
+  }
+  return null;
+}
+
 function trackLookupUrl(spotifyUri) {
-  const prefix = 'spotify:track:';
-  if (!spotifyUri || !spotifyUri.startsWith || !spotifyUri.startsWith(prefix)) {
+  if (!spotifyUri || !spotifyUri.startsWith) {
     return null;
   }
 
-  const trackId = spotifyUri.slice(prefix.length);
+  let trackId = trimPrefix(spotifyUri, 'https://open.spotify.com/track/');
+  if (trackId) {
+    // remove query string
+    trackId = trackId.split('?', 1);
+  } else {
+    trackId = trimPrefix(spotifyUri, 'spotify:track:');
+  }
+
+  if (!trackId) {
+    return null;
+  }
 
   return 'https://api.spotify.com/v1/tracks/' + trackId;
 }
