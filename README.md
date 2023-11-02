@@ -1,32 +1,13 @@
 First time
 ----------
 
-Make sure RethinkDB is running. Then run
+To seed a database
 
-    npm run seed_db
+    BPMS_DB=test.db npm run seed_db
 
-First time setup with docker
-----------------------------
+Running with docker/podman
+--------------------------
 
-You can either install RethinkDB locally or run it in docker. This section
-describes the latter and borrows heavily from the documentation of the
-[rethinkdb docker image](https://hub.docker.com/_/rethinkdb/).
+Run it like follows:
 
-If you're on linux, make sure you're in the docker group:
-
-    sudo usermod -aG docker $USER
-
-Install rethinkdb:
-
-    docker pull rethinkdb
-
-With native docker on Mac, run it like follows:
-
-    docker run -p 8080:8080 -p 28015:28015 -p 29015:29015 --name find-tempo-rethinkdb -v "$PWD/find-tempo-db:/data" -d rethinkdb
-    npm start
-
-For boot2docker, try:
-
-    docker run --name find-tempo-rethinkdb -v "$PWD/find-tempo-db:/data" -d rethinkdb
-    RETHINKDB_HOST=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}' find-tempo-rethinkdb) npm start
-
+    podman run -v $PWD:/src -w /src -p 8000:8000 -e BPMS_DB=test.db -it node:20.1.0 npm start

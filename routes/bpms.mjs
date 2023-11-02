@@ -1,47 +1,19 @@
 'use strict';
 
-var express      = require('express');
-var r            = require('rethinkdb');
-var router       = express.Router();
-var https        = require("https");
+import express from 'express';
+import https from 'https';
+import { getDatabase } from "../db.mjs";
 
-const with_db_connection = function() {
-  var db_connection = null;
-  r.connect({ host:    process.env.RETHINKDB_HOST || 'localhost',
-              port:    process.env.RETHINKDB_PORT || 28015,
-              authKey: process.env.RETHINKDB_AUTH,
-              db:      'bpm'
-            }, function(err, connection) {
-    if (err) { console.log(err); throw err; }
+const router = express.Router();
 
-    db_connection = connection;
+router.get('/', async function(_req, response) {
+  const db = await getDatabase();
 
-    console.log("Established db connection");
-  });
+  response.writeHead(200, {"Content-Type": "application/json", "Access-Control-Allow-Origin": "http://johanneshoff.com"});
 
-  return function(request, response, next) {
-    if (!db_connection)
-    {
-      response.writeHead(503, {"Content-Type": "text/plain"});
-      response.end("No DB connection");
-      return;
-    }
-    next(request, response, next, db_connection);
-  }
-}();
+  const results = await db.all(`select * from bpms order by added desc`);
 
-
-router.get('/', function(_req, response, next) {
-  with_db_connection(_req, response, function(_req, response, next, db_connection) {
-    response.writeHead(200, {"Content-Type": "application/json", "Access-Control-Allow-Origin": "http://johanneshoff.com"});
-    r.table('bpm').orderBy(r.desc('added')).run(db_connection, function(err, cursor) {
-      if (err) { console.log(err); throw err; }
-      cursor.toArray(function(err, array) {
-        if (err) { console.log(err); throw err; }
-        response.end(JSON.stringify(array));
-      });
-    });
-  });
+  response.end(JSON.stringify(results));
 });
 
 router.post('/', function(request, response, next) {
@@ -124,4 +96,4 @@ function getTrackMeta(spotifyUri, next) {
   });
 }
 
-module.exports = router;
+export default router;
